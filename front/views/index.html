@@ -1,26 +1,338 @@
-<html>
-    <head>
-        {{> head}}
-    </head>
-    <body>
-        <h2>Game code</h2>
-        <input type="text" id="codeInput">
-        <button id="createGame">Create game</button>
-        <button id="joinGame">Join game</button>
-        <div style="color: red" id="errorMessage"></div>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {{> head}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+      /* ─── Base Styles ─── */
+      body {
+        font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #121212 url('https://images.unsplash.com/photo-1541140134513-85a161dc4a00?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
+        background-size: cover;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        color: #f0e6d2;
+      }
 
-        <script>
-            $('#createGame').on('click', function() {
-                window.location.replace('/white?code=' + $('#codeInput').val());
-            });
-            $('#joinGame').on('click', function() {
-                window.location.replace('/black?code=' + $('#codeInput').val());
-            });
+      /* ─── Header ─── */
+      .site-header {
+        background: rgba(20, 20, 20, 0.9);
+        color: #d4af37;
+        text-align: center;
+        padding: 2rem 0;
+        font-size: 2.8rem;
+        font-weight: 700;
+        letter-spacing: 4px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        position: relative;
+        border-bottom: 2px solid #d4af37;
+      }
 
-            var urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('error') == 'invalidCode') {
-                $('#errorMessage').text('Invalid invite code');
-            }
-        </script>
-    </body>
+      .site-header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, transparent, #d4af37, transparent);
+      }
+
+      .chess-icon {
+        margin: 0 15px;
+        color: #d4af37;
+      }
+
+      /* ─── Lobby Container ─── */
+      .lobby-container {
+        max-width: 500px;
+        margin: 5rem auto;
+        background: rgba(30, 30, 30, 0.85);
+        padding: 3rem;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+        text-align: center;
+        position: relative;
+        border: 1px solid #d4af37;
+        backdrop-filter: blur(5px);
+      }
+
+      .lobby-container::before {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        border: 1px solid rgba(212, 175, 55, 0.3);
+        border-radius: 5px;
+        pointer-events: none;
+      }
+
+      .lobby-container h2 {
+        margin-bottom: 2.5rem;
+        color: #d4af37;
+        font-size: 2rem;
+        font-weight: 600;
+        position: relative;
+        display: inline-block;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      }
+
+      .lobby-container h2::after {
+        content: "";
+        position: absolute;
+        bottom: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 2px;
+        background: #d4af37;
+        border-radius: 2px;
+      }
+
+      /* ─── Input & Buttons ─── */
+      .lobby-container input,
+      .lobby-container button {
+        display: block;
+        width: 100%;
+        margin: 1.2rem 0;
+        padding: 1rem;
+        font-size: 1.1rem;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+      }
+
+      .lobby-container input {
+        border: 2px solid #444;
+        background-color: rgba(40, 40, 40, 0.8);
+        color: #f0e6d2;
+        font-family: 'Montserrat', sans-serif;
+      }
+
+      .lobby-container input:focus {
+        border-color: #d4af37;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
+        background-color: rgba(50, 50, 50, 0.8);
+      }
+
+      .lobby-container input::placeholder {
+        color: #777;
+        font-style: italic;
+      }
+
+      .lobby-container button {
+        border: none;
+        color: #121212;
+        font-weight: 600;
+        letter-spacing: 1px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-transform: uppercase;
+      }
+
+      .lobby-container button i {
+        font-size: 1.2rem;
+      }
+
+      .lobby-container button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: 0.5s;
+      }
+
+      .lobby-container button:hover::before {
+        left: 100%;
+      }
+
+      .lobby-container button:active {
+        transform: scale(0.98);
+      }
+
+      /* Button specific styles */
+      #createGame {
+        background: linear-gradient(to right, #d4af37, #f0e6d2);
+        color: #121212;
+      }
+
+      #createGame:hover {
+        background: linear-gradient(to right, #c9a227, #e6d8b5);
+      }
+
+      #joinGame {
+        background: linear-gradient(to right, #8b8b8b, #c0c0c0);
+        color: #121212;
+      }
+
+      #joinGame:hover {
+        background: linear-gradient(to right, #7a7a7a, #b0b0b0);
+      }
+
+      #joinAsSpectator {
+        background: linear-gradient(to right, #5d4037, #8d6e63);
+        color: #f0e6d2;
+      }
+
+      #joinAsSpectator:hover {
+        background: linear-gradient(to right, #4e352e, #7b5d54);
+      }
+
+      /* ─── Error Message ─── */
+      .error-message {
+        color: #ff6b6b;
+        margin: 1.5rem 0 0;
+        font-weight: 600;
+        padding: 0.8rem;
+        background-color: rgba(255, 107, 107, 0.1);
+        border-radius: 4px;
+        animation: fadeIn 0.3s ease;
+        border-left: 3px solid #ff6b6b;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Chess board corner decorations */
+      .corner {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border-color: #d4af37;
+        border-style: solid;
+        border-width: 0;
+      }
+
+      .top-left {
+        top: 10px;
+        left: 10px;
+        border-top-width: 2px;
+        border-left-width: 2px;
+      }
+
+      .top-right {
+        top: 10px;
+        right: 10px;
+        border-top-width: 2px;
+        border-right-width: 2px;
+      }
+
+      .bottom-left {
+        bottom: 10px;
+        left: 10px;
+        border-bottom-width: 2px;
+        border-left-width: 2px;
+      }
+
+      .bottom-right {
+        bottom: 10px;
+        right: 10px;
+        border-bottom-width: 2px;
+        border-right-width: 2px;
+      }
+
+      /* ─── Responsive ─── */
+      @media (max-width: 600px) {
+        .site-header {
+          font-size: 2rem;
+          padding: 1.5rem 0;
+        }
+
+        .lobby-container {
+          margin: 3rem 1.5rem;
+          padding: 2rem;
+        }
+
+        .lobby-container h2 {
+          font-size: 1.6rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Site Header -->
+    <header class="site-header">
+      <i class="fas fa-chess-rook chess-icon"></i>
+      ChessMasters
+      <i class="fas fa-chess-knight chess-icon"></i>
+    </header>
+
+    <!-- Lobby Controls -->
+    <main class="lobby-container">
+      <div class="corner top-left"></div>
+      <div class="corner top-right"></div>
+      <div class="corner bottom-left"></div>
+      <div class="corner bottom-right"></div>
+      
+      <h2>Enter Game Code</h2>
+      <input
+        type="text"
+        id="codeInput"
+        placeholder="e.g. king's-gambit"
+        autocomplete="off"
+      />
+      <button id="createGame"><i class="fas fa-plus"></i> Create Game</button>
+      <button id="joinGame"><i class="fas fa-sign-in-alt"></i> Join Game</button>
+      <button id="joinAsSpectator"><i class="fas fa-eye"></i> Spectate</button>
+      <div id="errorMessage" class="error-message"></div>
+    </main>
+
+    <script>
+      // Create
+      document.getElementById("createGame").addEventListener("click", function () {
+        const code = document.getElementById("codeInput").value.trim();
+        if (code) {
+          window.location.replace("/white?code=" + code);
+        } else {
+          document.getElementById("errorMessage").textContent =
+            "Please enter a game code.";
+        }
+      });
+
+      // Join
+      document.getElementById("joinGame").addEventListener("click", function () {
+        const code = document.getElementById("codeInput").value.trim();
+        if (code) {
+          window.location.replace("/black?code=" + code);
+        } else {
+          document.getElementById("errorMessage").textContent =
+            "Please enter a game code.";
+        }
+      });
+
+      // Spectator
+      document
+        .getElementById("joinAsSpectator")
+        .addEventListener("click", function () {
+          const code = document.getElementById("codeInput").value.trim();
+          if (code) {
+            window.location.replace("/spectator?code=" + code);
+          } else {
+            document.getElementById("errorMessage").textContent =
+              "Please enter a game code.";
+          }
+        });
+
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("error") === "invalidCode") {
+        document.getElementById("errorMessage").textContent =
+          "Invalid invite code";
+      }
+    </script>
+  </body>
 </html>

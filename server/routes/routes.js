@@ -1,21 +1,47 @@
-module.exports = app => {
+let games = {};
 
-    app.get('/', (req, res) => {
-        res.render('index');
-    });
+module.exports = (app) => {
+  app.get("/", (req, res) => {
+    res.render("index");
+  });
 
-    app.get('/white', (req, res) => {
-        res.render('game', {
-            color: 'white'
-        });
-    });
-    app.get('/black', (req, res) => {
-        if (!games[req.query.code]) {
-            return res.redirect('/?error=invalidCode');
-        }
+  app.get("/white", (req, res) => {
+    let code = req.query.code;
+    if (!games[code]) {
+      games[code] = {
+        white: null,
+        black: null,
+        spectators: [],
+        gameStarted: false,
+      };
+    }
 
-        res.render('game', {
-            color: 'black'
-        });
-    });
+    games[code].white = "player";
+    res.render("game", { color: "white", code });
+  });
+
+
+  app.get("/black", (req, res) => {
+    let code = req.query.code;
+    if (!games[code]) {
+      return res.redirect("/?error=invalidCode");
+    }
+
+    games[code].black = "player";
+
+    if (games[code].white && games[code].black && !games[code].gameStarted) {
+      games[code].gameStarted = true; 
+      res.render("game", { color: "black", code });
+    } else {
+      res.render("game", { color: "black", code });
+    }
+  });
+
+  app.get("/spectator", (req, res) => {
+    let code = req.query.code;
+    if (!games[code]) {
+      return res.redirect("/?error=invalidCode");
+    }
+    res.render("game", { color: "spectator", code });
+  });
 };
