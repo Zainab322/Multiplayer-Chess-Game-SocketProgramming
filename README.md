@@ -59,22 +59,33 @@ Additional clients can join as Spectators
 🔄 How It Works
 🖥 Client
 -Connects to the server via TCP socket
+
 -Sends move data to the server in JSON format
+
 -Receives updated board state and renders it
+
 -Handles in-game chat communication
 
 🖧 Server
 -Accepts multiple incoming connections
+
 -Manages player matchmaking
+
 -Validates moves based on chess rules
+
 -Broadcasts updated game state to both players and spectators
+
 -Handles turn timing and chat messages
 
 🧠 Key Learnings
 --Designing a real-time multiplayer application
+
 --Implementing client-server architecture
+
 --Managing synchronization across multiple clients
+
 --Building both frontend UI and backend logic
+
 --Handling network latency and state consistency
 
 
